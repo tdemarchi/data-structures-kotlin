@@ -1,7 +1,7 @@
 package tkd.datastructure.tree.builder
 
 import tkd.datastructure.tree.binary.BinaryNode
-import tkd.datastructure.tree.multichildren.MultiChildrenNode
+import tkd.datastructure.tree.TreeNode
 
 class TreeBuilder<T> {
     private data class NodeData<T>(
@@ -69,15 +69,15 @@ class TreeBuilder<T> {
         return this
     }
 
-    private fun buildNode(value: T): MultiChildrenNode<T> {
+    private fun buildNode(value: T): TreeNode<T> {
         val nodeData = nodeDataMap[value]!!
-        return MultiChildrenNode(
+        return TreeNode(
             value = nodeData.value,
             children = nodeData.children.map { buildNode(it) }
         )
     }
 
-    fun buildMultiChildren(): MultiChildrenNode<T> =
+    fun build(): TreeNode<T> =
         nodeDataMap.values
             .filter { it.parent == null }
             .let { rootList ->
@@ -87,9 +87,9 @@ class TreeBuilder<T> {
             }
 
     fun buildBinary(): BinaryNode<T> =
-        buildMultiChildren().toBinary()
+        build().toBinary()
 
-    private fun MultiChildrenNode<T>.toBinary(): BinaryNode<T> {
+    private fun TreeNode<T>.toBinary(): BinaryNode<T> {
         if (children.size > 2) throw IllegalArgumentException("Node $value has more than 2 children ${children.map { it.value }}.")
         return BinaryNode(
             value = value,
