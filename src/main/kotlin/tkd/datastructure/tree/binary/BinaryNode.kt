@@ -1,6 +1,5 @@
-package tkd.collections
+package tkd.datastructure.tree.binary
 
-import io.kotest.core.spec.style.WordSpec
 import java.util.Objects
 
 data class BinaryNode<T>(
@@ -17,6 +16,10 @@ data class BinaryNode<T>(
             false
         }
 
+    override fun hashCode(): Int {
+        return value?.hashCode() ?: 0
+    }
+
     fun toStringTree() = toStringTreeCurrent("")
 
     private fun toStringTreeCurrent(childrenPrefix: String = ""): String =
@@ -31,8 +34,8 @@ data class BinaryNode<T>(
 
     fun preOrderTraverseBreak(block: (BinaryNode<T>) -> Boolean): Boolean {
         if (block(this)) return true
-        if (leftChild?.let { it.preOrderTraverseBreak(block) } == true) return true
-        if (rightChild?.let { it.preOrderTraverseBreak(block) } == true) return true
+        if (leftChild?.preOrderTraverseBreak(block) == true) return true
+        if (rightChild?.preOrderTraverseBreak(block) == true) return true
         return false
     }
 
@@ -44,9 +47,9 @@ data class BinaryNode<T>(
     }
 
     fun inOrderTraverseBreak(block: (BinaryNode<T>) -> Boolean): Boolean {
-        if (leftChild?.let { it.inOrderTraverseBreak(block) } == true) return true
+        if (leftChild?.inOrderTraverseBreak(block) == true) return true
         if (block(this)) return true
-        if (rightChild?.let { it.inOrderTraverseBreak(block) } == true) return true
+        if (rightChild?.inOrderTraverseBreak(block) == true) return true
         return false
     }
 
@@ -58,8 +61,8 @@ data class BinaryNode<T>(
     }
 
     fun postOrderTraverseBreak(block: (BinaryNode<T>) -> Boolean): Boolean {
-        if (leftChild?.let { it.postOrderTraverseBreak(block) } == true) return true
-        if (rightChild?.let { it.postOrderTraverseBreak(block) } == true) return true
+        if (leftChild?.postOrderTraverseBreak(block) == true) return true
+        if (rightChild?.postOrderTraverseBreak(block) == true) return true
         if (block(this)) return true
         return false
     }
@@ -108,95 +111,6 @@ data class BinaryNode<T>(
         inBreadthTraverseBreak {
             block(it)
             false
-        }
-    }
-}
-
-class BinaryTreeTest : WordSpec() {
-
-    init {
-        val tree = BinaryNode("A",
-            BinaryNode("B",
-                BinaryNode("C",
-                    BinaryNode("D"),
-                    BinaryNode("E"),
-                ),
-                BinaryNode("F",
-                    BinaryNode("G",
-                        BinaryNode("H"),
-                        BinaryNode("I"),
-                    ),
-                ),
-            ),
-            BinaryNode("J"),
-        )
-
-        "toStringTree" When {
-            "-" should {
-                "-" {
-                    println(tree.toStringTree())
-                }
-            }
-        }
-
-        "preOrderTraverse" When {
-            "-" should {
-                "-" {
-                    print("preOrderTraverse: ")
-                    tree.preOrderTraverse {
-                        print(it.value)
-                    }
-                    println()
-                }
-            }
-        }
-
-        "inOrderTraverse" When {
-            "-" should {
-                "-" {
-                    print("inOrderTraverse: ")
-                    tree.inOrderTraverse {
-                        print(it.value)
-                    }
-                    println()
-                }
-            }
-        }
-
-        "postOrderTraverse" When {
-            "-" should {
-                "-" {
-                    print("postOrderTraverse: ")
-                    tree.postOrderTraverse {
-                        print(it.value)
-                    }
-                    println()
-                }
-            }
-        }
-
-        "inDepthTraverse" When {
-            "-" should {
-                "-" {
-                    print("inDepthTraverse: ")
-                    tree.inDepthTraverse {
-                        print(it.value)
-                    }
-                    println()
-                }
-            }
-        }
-
-        "inBreadthTraverse" When {
-            "-" should {
-                "-" {
-                    print("inBreadthTraverse: ")
-                    tree.inBreadthTraverse {
-                        print(it.value)
-                    }
-                    println()
-                }
-            }
         }
     }
 }

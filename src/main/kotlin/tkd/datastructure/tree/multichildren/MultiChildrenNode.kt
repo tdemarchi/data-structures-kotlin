@@ -1,6 +1,5 @@
-package tkd.collections
+package tkd.datastructure.tree.multichildren
 
-import io.kotest.core.spec.style.WordSpec
 import java.util.Objects
 
 data class MultiChildrenNode<T>(
@@ -17,6 +16,10 @@ data class MultiChildrenNode<T>(
         } else {
             false
         }
+
+    override fun hashCode(): Int {
+        return value?.hashCode() ?: 0
+    }
 
     fun toStringTree() = toStringTreeCurrent("")
 
@@ -71,65 +74,6 @@ data class MultiChildrenNode<T>(
         inBreadthTraverseBreak {
             block(it)
             false
-        }
-    }
-}
-
-class MultiChildrenTreeTest : WordSpec() {
-
-    init {
-        val tree = MultiChildrenNode("A",
-            MultiChildrenNode("B",
-                MultiChildrenNode("C",
-                    MultiChildrenNode("D"),
-                    MultiChildrenNode("E"),
-                    MultiChildrenNode("F"),
-                ),
-                MultiChildrenNode("G",
-                    MultiChildrenNode("H",
-                        MultiChildrenNode("I"),
-                        MultiChildrenNode("J"),
-                    ),
-                ),
-            ),
-            MultiChildrenNode("K"),
-            MultiChildrenNode("L",
-                MultiChildrenNode("M"),
-                MultiChildrenNode("N"),
-            )
-
-        )
-
-        "toStringTree" When {
-            "-" should {
-                "-" {
-                    println(tree.toStringTree())
-                }
-            }
-        }
-
-        "inDepthTraverse" When {
-            "-" should {
-                "-" {
-                    print("inDepthTraverse: ")
-                    tree.inDepthTraverse {
-                        print(it.value)
-                    }
-                    println()
-                }
-            }
-        }
-
-        "inBreadthTraverse" When {
-            "-" should {
-                "-" {
-                    print("inBreadthTraverse: ")
-                    tree.inBreadthTraverse {
-                        print(it.value)
-                    }
-                    println()
-                }
-            }
         }
     }
 }
