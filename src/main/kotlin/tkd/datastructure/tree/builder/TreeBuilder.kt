@@ -1,6 +1,9 @@
-package tkd.datastructure.tree.multichildren
+package tkd.datastructure.tree.builder
 
-class MultiChildrenTreeBuilder<T> {
+import tkd.datastructure.tree.binary.BinaryNode
+import tkd.datastructure.tree.multichildren.MultiChildrenNode
+
+class TreeBuilder<T> {
     private data class NodeData<T>(
         val value: T,
     ) {
@@ -10,7 +13,7 @@ class MultiChildrenTreeBuilder<T> {
 
     private val nodeDataMap: MutableMap<T, NodeData<T>> = LinkedHashMap()
 
-    fun edge(nodeAValue: T, nodeBValue: T): MultiChildrenTreeBuilder<T> {
+    fun edge(nodeAValue: T, nodeBValue: T): TreeBuilder<T> {
         nodeDataMap.computeIfAbsent(nodeAValue) { _ ->
             NodeData(nodeAValue)
         }.children.add(nodeBValue)
@@ -28,7 +31,7 @@ class MultiChildrenTreeBuilder<T> {
         return this
     }
 
-    fun edge(values: String, delimiter: String = " ", mappingFunction: (String) -> T): MultiChildrenTreeBuilder<T> {
+    fun edge(values: String, delimiter: String = " ", mappingFunction: (String) -> T): TreeBuilder<T> {
         val arr = values.trim().also {
             if (it.isEmpty()) throw IllegalArgumentException("""The edge string is empty.""")
         }.split(delimiter)
@@ -59,7 +62,7 @@ class MultiChildrenTreeBuilder<T> {
         input: String,
         delimiter: String = " ",
         mappingFunction: (String) -> T
-    ): MultiChildrenTreeBuilder<T> {
+    ): TreeBuilder<T> {
         input.lines().forEach { line ->
             edge(line, delimiter, mappingFunction)
         }
@@ -74,7 +77,7 @@ class MultiChildrenTreeBuilder<T> {
         )
     }
 
-    fun build(): MultiChildrenNode<T> =
+    fun buildMultiChildren(): MultiChildrenNode<T> =
         nodeDataMap.values
             .filter { it.parent == null }
             .let { rootList ->
@@ -82,6 +85,18 @@ class MultiChildrenTreeBuilder<T> {
                 if (rootList.size > 1) throw IllegalArgumentException("Problem building tree, there are more than one root node ${rootList.map { it.value }}.")
                 buildNode(rootList.first().value)
             }
+
+    fun buildBinary(): BinaryNode<T> =
+        buildMultiChildren().toBinary()
+
+    private fun MultiChildrenNode<T>.toBinary(): BinaryNode<T> {
+        if (children.size > 2) throw IllegalArgumentException("Node $value has more than 2 children ${children.map { it.value }}.")
+        return BinaryNode(
+            value = value,
+            leftChild = children.getOrNull(0)?.toBinary(),
+            rightChild = children.getOrNull(1)?.toBinary(),
+        )
+    }
 }
 
-fun <T> multiChildrenTreeBuilder() = MultiChildrenTreeBuilder<T>()
+fun <T> treeBuilder() = TreeBuilder<T>()

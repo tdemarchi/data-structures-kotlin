@@ -1,4 +1,4 @@
-package tkd.datastructure.tree.multichildren
+package tkd.datastructure.tree.builder
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.WordSpec
@@ -6,15 +6,15 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldStartWith
 
-class MultiChildrenTreeBuilderTest : WordSpec() {
+class TreeBuilderTest : WordSpec() {
     init {
-        "build" When {
+        "buildMultiChildren" When {
             "is usual tree" should {
                 "build tree" {
-                    val tree = multiChildrenTreeBuilder<String>()
+                    val tree = treeBuilder<String>()
                         .edge("A", "B")
                         .edge("A", "C")
-                        .build()
+                        .buildMultiChildren()
 
                     tree shouldNotBe null
 
@@ -24,8 +24,8 @@ class MultiChildrenTreeBuilderTest : WordSpec() {
             "no edges provided" should {
                 "throw exception" {
                     shouldThrow<IllegalArgumentException> {
-                        multiChildrenTreeBuilder<String>()
-                            .build()
+                        treeBuilder<String>()
+                            .buildMultiChildren()
                     }.message shouldBe "Problem building tree, there is no root node."
                 }
             }
@@ -42,9 +42,9 @@ class MultiChildrenTreeBuilderTest : WordSpec() {
                         """.trimIndent()
 
                     shouldThrow<IllegalArgumentException> {
-                        multiChildrenTreeBuilder<String>()
+                        treeBuilder<String>()
                             .edgesFromLines(input) { it }
-                            .build()
+                            .buildMultiChildren()
                     }.message shouldStartWith "Problem building tree, there are more than one root node"
                 }
             }
@@ -61,9 +61,9 @@ class MultiChildrenTreeBuilderTest : WordSpec() {
                         """.trimIndent()
 
                     shouldThrow<IllegalArgumentException> {
-                        multiChildrenTreeBuilder<String>()
+                        treeBuilder<String>()
                             .edgesFromLines(input) { it }
-                            .build()
+                            .buildMultiChildren()
                     }.message shouldBe "Problem building tree, there is no root node."
                 }
             }
@@ -80,10 +80,41 @@ class MultiChildrenTreeBuilderTest : WordSpec() {
                         """.trimIndent()
 
                     shouldThrow<IllegalArgumentException> {
-                        multiChildrenTreeBuilder<String>()
+                        treeBuilder<String>()
                             .edgesFromLines(input) { it }
-                            .build()
+                            .buildMultiChildren()
                     }.message shouldBe "The edge (C, E) declares a child node E that is already child of F."
+                }
+            }
+        }
+
+        "buildBinary" When {
+            "is usual tree" should {
+                "build tree" {
+                    val tree = treeBuilder<String>()
+                        .edge("A", "B")
+                        .edge("A", "C")
+                        .buildBinary()
+
+                    tree shouldNotBe null
+
+                    println(tree.toStringTree())
+                }
+            }
+
+            "not binary" should {
+                "throw exception" {
+                    val input = """
+                        A B
+                        A C
+                        A D
+                        """.trimIndent()
+
+                    shouldThrow<IllegalArgumentException> {
+                        treeBuilder<String>()
+                            .edgesFromLines(input) { it }
+                            .buildBinary()
+                    }.message shouldBe "Node A has more than 2 children [B, C, D]."
                 }
             }
         }
@@ -100,9 +131,9 @@ class MultiChildrenTreeBuilderTest : WordSpec() {
                         C G
                         """.trimIndent()
 
-                    val tree = multiChildrenTreeBuilder<String>()
+                    val tree = treeBuilder<String>()
                         .edgesFromLines(input) { it }
-                        .build()
+                        .buildMultiChildren()
 
                     tree shouldNotBe null
 
@@ -115,9 +146,9 @@ class MultiChildrenTreeBuilderTest : WordSpec() {
                         """.trimIndent()
 
                     shouldThrow<IllegalArgumentException> {
-                        multiChildrenTreeBuilder<String>()
+                        treeBuilder<String>()
                             .edgesFromLines(input) { it }
-                            .build()
+                            .buildMultiChildren()
                     }.message shouldBe "The edge string is empty."
                 }
             }
