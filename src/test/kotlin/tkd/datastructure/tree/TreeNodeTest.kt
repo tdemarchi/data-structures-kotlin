@@ -125,5 +125,52 @@ class TreeNodeTest : WordSpec() {
                 }
             }
         }
+
+        "getDescendantGeneration" When {
+            "querying root node" should {
+                "return generation 0" {
+                    tree.getDescendantGeneration("A") shouldBe 0
+                }
+            }
+
+            "querying child node" should {
+                "return generation 1" {
+                    tree.getDescendantGeneration("B") shouldBe 1
+                    tree.getDescendantGeneration("K") shouldBe 1
+                    tree.getDescendantGeneration("L") shouldBe 1
+                }
+            }
+
+            "querying grandchild node" should {
+                "return generation 2" {
+                    tree.getDescendantGeneration("C") shouldBe 2
+                    tree.getDescendantGeneration("G") shouldBe 2
+                    tree.getDescendantGeneration("M") shouldBe 2
+                    tree.getDescendantGeneration("N") shouldBe 2
+                }
+            }
+
+            "querying great-grandchild node" should {
+                "return generation 3" {
+                    tree.getDescendantGeneration("D") shouldBe 3
+                    tree.getDescendantGeneration("E") shouldBe 3
+                    tree.getDescendantGeneration("F") shouldBe 3
+                    tree.getDescendantGeneration("H") shouldBe 3
+                }
+            }
+
+            "querying great-great-grandchild node" should {
+                "return generation 4" {
+                    tree.getDescendantGeneration("I") shouldBe 4
+                    tree.getDescendantGeneration("J") shouldBe 4
+                }
+            }
+
+            "querying node not descendant" should {
+                "return null" {
+                    tree.getDescendantGeneration("Z") shouldBe null
+                }
+            }
+        }
     }
 }

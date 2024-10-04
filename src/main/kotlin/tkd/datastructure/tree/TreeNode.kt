@@ -2,11 +2,6 @@ package tkd.datastructure.tree
 
 import java.util.*
 import kotlin.collections.ArrayDeque
-import kotlin.collections.List
-import kotlin.collections.indices
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.reversed
 
 data class TreeNode<T>(
     val value: T,
@@ -23,6 +18,11 @@ data class TreeNode<T>(
         // private const val VISUAL_TREE_LAST_CHILD_INDICATOR = "+--"
         // private const val VISUAL_TREE_FIRST_GRANDCHILD_INDICATOR = "|   "
         // private const val VISUAL_TREE_LAST_CHILD_GRANDCHILDREN_INDICATOR = "    "
+
+        data class TreeNodeTraverseNodeWrapper<T, P>(
+            val node: TreeNode<T>,
+            val payload: P,
+        )
     }
 
     constructor(value: T, vararg children: TreeNode<T>) : this(value, listOf(*children))
@@ -99,6 +99,31 @@ data class TreeNode<T>(
     /**
      * Traverse the tree in breadth, calling [block] for each node.
      *
+     * This algorithm carries a payload of type [Payload] with each to be visited.
+     * The payload for each node should be provided by the [payloadProvider] function.
+     */
+    inline fun <Payload> inDepthTraverse(
+        payloadProvider: (TreeNode<T>, TreeNodeTraverseNodeWrapper<T, Payload>?) -> Payload, // (current node, parent's wrapper) -> the payload for the current node
+        block: (TreeNodeTraverseNodeWrapper<T, Payload>) -> Unit
+    ) {
+        val stack = ArrayDeque<TreeNodeTraverseNodeWrapper<T, Payload>>()
+        stack.add(TreeNodeTraverseNodeWrapper(this, payloadProvider(this, null)))
+
+        while (!stack.isEmpty()) {
+            val currentWrapper = stack.removeLast()
+            block(currentWrapper)
+            stack.addAll(
+                currentWrapper.node.children.reversed()
+                    .map { childNode ->
+                        TreeNodeTraverseNodeWrapper(childNode, payloadProvider(childNode, currentWrapper))
+                    }
+            )
+        }
+    }
+
+    /**
+     * Traverse the tree in breadth, calling [block] for each node.
+     *
      * Traversing the below tree in breadth results in this visiting order: A B K L C G M N D E F H I J
      *
      *   A                    ( 1)
@@ -125,5 +150,22 @@ data class TreeNode<T>(
             block(currentNode)
             queue.addAll(currentNode.children)
         }
+    }
+
+    /**
+     * Return the generation of a descendant node.
+     * Return null if the descendant is not found.
+     */
+    fun getDescendantGeneration(descendantValue: T): Int? {
+        inDepthTraverse<Int>(
+            payloadProvider = { _, parent ->
+                parent?.payload?.plus(1) ?: 0
+            }
+        ) { currentWrapper ->
+            if (currentWrapper.node.value == descendantValue) {
+                return@getDescendantGeneration currentWrapper.payload
+            }
+        }
+        return null
     }
 }
