@@ -58,65 +58,71 @@ class TreeNodeTest : WordSpec() {
             }
         }
 
-        "inDepthTraverse" should {
-            "traverse nodes in depth" {
-                val obtainedStringBuilder = StringBuilder()
+        "inDepthTraverse" When {
+            "full traverse" should {
+                "traverse all nodes in depth" {
+                    val obtainedStringBuilder = StringBuilder()
 
-                print("inDepthTraverse: ")
-                tree.inDepthTraverse {
-                    print(it.value)
-                    obtainedStringBuilder.append(it.value)
+                    print("inDepthTraverse: ")
+                    tree.inDepthTraverse {
+                        print(it.value)
+                        obtainedStringBuilder.append(it.value)
+                    }
+                    println()
+
+                    obtainedStringBuilder.toString() shouldBe "ABCDEFGHIJKLMN"
                 }
-                println()
+            }
+            "breaking when asked" should {
+                "traverse nodes in depth until break" {
+                    val obtainedStringBuilder = StringBuilder()
 
-                obtainedStringBuilder.toString() shouldBe "ABCDEFGHIJKLMN"
+                    print("inDepthTraverse, breaking on D: ")
+                    tree.run {
+                        inDepthTraverse {
+                            print(it.value)
+                            obtainedStringBuilder.append(it.value)
+                            if (it.value == "D") return@run // Break when "D" is visited
+                        }
+                    }
+                    println()
+
+                    obtainedStringBuilder.toString() shouldBe "ABCD"
+                }
             }
         }
 
-        "inDepthTraverseBreak" should {
-            "traverse nodes in depth, breaking when asked" {
-                val obtainedStringBuilder = StringBuilder()
+        "inBreadthTraverse" When {
+            "full traverse" should {
+                "traverse all nodes in breadth" {
+                    val obtainedStringBuilder = StringBuilder()
 
-                print("inDepthTraverseBreak: ")
-                tree.inDepthTraverseBreak {
-                    print(it.value)
-                    obtainedStringBuilder.append(it.value)
-                    (it.value == "D") // Break when "D" is visited
+                    print("inBreadthTraverse: ")
+                    tree.inBreadthTraverse {
+                        print(it.value)
+                        obtainedStringBuilder.append(it.value)
+                    }
+                    println()
+
+                    obtainedStringBuilder.toString() shouldBe "ABKLCGMNDEFHIJ"
                 }
-                println()
-
-                obtainedStringBuilder.toString() shouldBe "ABCD"
             }
-        }
+            "breaking when asked" should {
+                "traverse nodes in breadth until break" {
+                    val obtainedStringBuilder = StringBuilder()
 
-        "inBreadthTraverse" should {
-            "traverse nodes in breadth" {
-                val obtainedStringBuilder = StringBuilder()
+                    print("inBreadthTraverse, breaking on D: ")
+                    tree.run {
+                        inBreadthTraverse {
+                            print(it.value)
+                            obtainedStringBuilder.append(it.value)
+                            if (it.value == "D") return@run // Break when "D" is visited
+                        }
+                    }
+                    println()
 
-                print("inBreadthTraverse: ")
-                tree.inBreadthTraverse {
-                    print(it.value)
-                    obtainedStringBuilder.append(it.value)
+                    obtainedStringBuilder.toString() shouldBe "ABKLCGMND"
                 }
-                println()
-
-                obtainedStringBuilder.toString() shouldBe "ABKLCGMNDEFHIJ"
-            }
-        }
-
-        "inBreadthTraverseBreak" should {
-            "traverse nodes in breadth, breaking when asked" {
-                val obtainedStringBuilder = StringBuilder()
-
-                print("inBreadthTraverseBreak: ")
-                tree.inBreadthTraverseBreak {
-                    print(it.value)
-                    obtainedStringBuilder.append(it.value)
-                    (it.value == "D") // Break when "D" is visited
-                }
-                println()
-
-                obtainedStringBuilder.toString() shouldBe "ABKLCGMND"
             }
         }
     }

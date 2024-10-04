@@ -1,11 +1,30 @@
 package tkd.datastructure.tree
 
-import java.util.Objects
+import java.util.*
+import kotlin.collections.ArrayDeque
+import kotlin.collections.List
+import kotlin.collections.indices
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.reversed
 
 data class TreeNode<T>(
     val value: T,
     val children: List<TreeNode<T>>,
 ) {
+    companion object {
+        private const val VISUAL_TREE_FIRST_CHILD_INDICATOR = "├──"
+        private const val VISUAL_TREE_LAST_CHILD_INDICATOR = "└──"
+        private const val VISUAL_TREE_FIRST_CHILD_GRANDCHILDREN_INDICATOR = "│   "
+        private const val VISUAL_TREE_LAST_CHILD_GRANDCHILDREN_INDICATOR = "    "
+
+        // ASCII version
+        // private const val VISUAL_TREE_FIRST_CHILD_INDICATOR = "+--"
+        // private const val VISUAL_TREE_LAST_CHILD_INDICATOR = "+--"
+        // private const val VISUAL_TREE_FIRST_GRANDCHILD_INDICATOR = "|   "
+        // private const val VISUAL_TREE_LAST_CHILD_GRANDCHILDREN_INDICATOR = "    "
+    }
+
     constructor(value: T, vararg children: TreeNode<T>) : this(value, listOf(*children))
 
     override fun toString(): String = """TreeNode($value)"""
@@ -37,26 +56,14 @@ data class TreeNode<T>(
 
     private fun toStringTreeChild(child: TreeNode<T>?, prefix: String, hasNext: Boolean) =
         if (child != null) {
-            "\n$prefix${if (hasNext) "├──" else "└──"} ${child.toStringTreeCurrent("$prefix${if (hasNext) "│" else " "}   ")}"
+            "\n$prefix${if (hasNext) VISUAL_TREE_FIRST_CHILD_INDICATOR else VISUAL_TREE_LAST_CHILD_INDICATOR} ${
+                child.toStringTreeCurrent(
+                    "$prefix${if (hasNext) VISUAL_TREE_FIRST_CHILD_GRANDCHILDREN_INDICATOR else VISUAL_TREE_LAST_CHILD_GRANDCHILDREN_INDICATOR}"
+                )
+            }"
         } else {
             ""
         }
-
-    /**
-     * Traverse the tree in depth, calling [block] for each node.
-     * When [block] returns null, the traversing stops.
-     */
-    inline fun inDepthTraverseBreak(block: (TreeNode<T>) -> Boolean): Boolean {
-        val array = ArrayDeque<TreeNode<T>>()
-        array.add(this)
-
-        while (!array.isEmpty()) {
-            val currentNode = array.removeLast()
-            if (block(currentNode)) return true
-            array.addAll(currentNode.children.reversed())
-        }
-        return false
-    }
 
     /**
      * Traverse the tree in depth, calling [block] for each node.
@@ -79,26 +86,14 @@ data class TreeNode<T>(
      *       └── N            (14)
      */
     inline fun inDepthTraverse(block: (TreeNode<T>) -> Unit) {
-        inDepthTraverseBreak {
-            block(it)
-            false
-        }
-    }
+        val stack = ArrayDeque<TreeNode<T>>()
+        stack.add(this)
 
-    /**
-     * Traverse the tree in breadth, calling [block] for each node.
-     * When [block] returns null, the traversing stops.
-     */
-    inline fun inBreadthTraverseBreak(block: (TreeNode<T>) -> Boolean): Boolean {
-        val array = ArrayDeque<TreeNode<T>>()
-        array.add(this)
-
-        while (!array.isEmpty()) {
-            val currentNode = array.removeFirst()
-            if (block(currentNode)) return true
-            array.addAll(currentNode.children)
+        while (!stack.isEmpty()) {
+            val currentNode = stack.removeLast()
+            block(currentNode)
+            stack.addAll(currentNode.children.reversed())
         }
-        return false
     }
 
     /**
@@ -122,9 +117,13 @@ data class TreeNode<T>(
      *       └── N            ( 8)
      */
     inline fun inBreadthTraverse(block: (TreeNode<T>) -> Unit) {
-        inBreadthTraverseBreak {
-            block(it)
-            false
+        val queue = ArrayDeque<TreeNode<T>>()
+        queue.add(this)
+
+        while (!queue.isEmpty()) {
+            val currentNode = queue.removeFirst()
+            block(currentNode)
+            queue.addAll(currentNode.children)
         }
     }
 }

@@ -1,6 +1,7 @@
 package tkd.datastructure.tree.binary
 
-import java.util.Objects
+import java.util.*
+import kotlin.collections.ArrayDeque
 
 data class BinaryNode<T>(
     val value: T,
@@ -26,7 +27,13 @@ data class BinaryNode<T>(
     fun toStringTree() = toStringTreeCurrent("")
 
     private fun toStringTreeCurrent(childrenPrefix: String = ""): String =
-        "$value${toStringTreeChild(leftChild, childrenPrefix, rightChild != null)}${toStringTreeChild(rightChild, childrenPrefix, false)}"
+        "$value${toStringTreeChild(leftChild, childrenPrefix, rightChild != null)}${
+            toStringTreeChild(
+                rightChild,
+                childrenPrefix,
+                false
+            )
+        }"
 
     private fun toStringTreeChild(child: BinaryNode<T>?, prefix: String, hasNext: Boolean) =
         if (child != null) {
@@ -142,23 +149,6 @@ data class BinaryNode<T>(
 
     /**
      * Traverse the tree in depth, calling [block] for each node.
-     * When [block] returns null, the traversing stops.
-     */
-    inline fun inDepthTraverseBreak(block: (BinaryNode<T>) -> Boolean): Boolean {
-        val stack = ArrayDeque<BinaryNode<T>>()
-        stack.addLast(this)
-
-        while (!stack.isEmpty()) {
-            val currentNode = stack.removeLast()
-            if (block(currentNode)) return true
-            currentNode.rightChild?.let { stack.addLast(it) }
-            currentNode.leftChild?.let { stack.addLast(it) }
-        }
-        return false
-    }
-
-    /**
-     * Traverse the tree in depth, calling [block] for each node.
      *
      * Traversing the below tree in depth results in this visiting order: A B C D E F G H I J K L M N
      *
@@ -174,27 +164,15 @@ data class BinaryNode<T>(
      *   └── J                (10)
      */
     inline fun inDepthTraverse(block: (BinaryNode<T>) -> Unit) {
-        inDepthTraverseBreak {
-            block(it)
-            false
-        }
-    }
+        val stack = ArrayDeque<BinaryNode<T>>()
+        stack.addLast(this)
 
-    /**
-     * Traverse the tree in breadth, calling [block] for each node.
-     * When [block] returns null, the traversing stops.
-     */
-    inline fun inBreadthTraverseBreak(block: (BinaryNode<T>) -> Boolean): Boolean {
-        val queue = ArrayDeque<BinaryNode<T>>()
-        queue.addLast(this)
-
-        while (!queue.isEmpty()) {
-            val currentNode = queue.removeFirst()
-            if (block(currentNode)) return true
-            currentNode.leftChild?.let { queue.addLast(it) }
-            currentNode.rightChild?.let { queue.addLast(it) }
+        while (!stack.isEmpty()) {
+            val currentNode = stack.removeLast()
+            block(currentNode)
+            currentNode.rightChild?.let { stack.addLast(it) }
+            currentNode.leftChild?.let { stack.addLast(it) }
         }
-        return false
     }
 
     /**
@@ -217,9 +195,14 @@ data class BinaryNode<T>(
      * but this uses a queue structure and in pre-order uses recursion.
      */
     inline fun inBreadthTraverse(block: (BinaryNode<T>) -> Unit) {
-        inBreadthTraverseBreak {
-            block(it)
-            false
+        val queue = ArrayDeque<BinaryNode<T>>()
+        queue.addLast(this)
+
+        while (!queue.isEmpty()) {
+            val currentNode = queue.removeFirst()
+            block(currentNode)
+            currentNode.leftChild?.let { queue.addLast(it) }
+            currentNode.rightChild?.let { queue.addLast(it) }
         }
     }
 }
