@@ -1,6 +1,7 @@
 package tkd.datastructure.tree
 
 import java.util.*
+import java.util.function.Predicate
 import kotlin.collections.ArrayDeque
 
 data class TreeNode<T>(
@@ -103,11 +104,12 @@ data class TreeNode<T>(
      * The payload for each node should be provided by the [payloadProvider] function.
      */
     inline fun <Payload> inDepthTraverse(
-        payloadProvider: (TreeNode<T>, TreeNodeTraverseNodeWrapper<T, Payload>?) -> Payload, // (current node, parent's wrapper) -> the payload for the current node
+        rootPayload: Payload,
+        payloadProvider: (TreeNode<T>, TreeNodeTraverseNodeWrapper<T, Payload>) -> Payload, // (current node, parent's wrapper) -> the payload for the current node
         block: (TreeNodeTraverseNodeWrapper<T, Payload>) -> Unit
     ) {
         val stack = ArrayDeque<TreeNodeTraverseNodeWrapper<T, Payload>>()
-        stack.add(TreeNodeTraverseNodeWrapper(this, payloadProvider(this, null)))
+        stack.add(TreeNodeTraverseNodeWrapper(this, rootPayload))
 
         while (!stack.isEmpty()) {
             val currentWrapper = stack.removeLast()
@@ -156,13 +158,14 @@ data class TreeNode<T>(
      * Return the generation of a descendant node.
      * Return null if the descendant is not found.
      */
-    fun getDescendantGeneration(descendantValue: T): Int? {
+    fun getDescendantGeneration(descendantNodePredicate: Predicate<TreeNode<T>>): Int? {
         inDepthTraverse<Int>(
+            rootPayload = 0,
             payloadProvider = { _, parent ->
-                parent?.payload?.plus(1) ?: 0
+                parent.payload + 1
             }
         ) { currentWrapper ->
-            if (currentWrapper.node.value == descendantValue) {
+            if (descendantNodePredicate.test(currentWrapper.node)) {
                 return@getDescendantGeneration currentWrapper.payload
             }
         }
