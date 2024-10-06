@@ -1,10 +1,9 @@
 package tkd.datastructure.tree
 
 import java.util.*
-import java.util.function.Predicate
 import kotlin.collections.ArrayDeque
 
-data class TreeNode<T>(
+open class TreeNode<T>(
     val value: T,
     val children: List<TreeNode<T>>,
 ) {
@@ -17,7 +16,7 @@ data class TreeNode<T>(
         // ASCII version
         // private const val VISUAL_TREE_FIRST_CHILD_INDICATOR = "+--"
         // private const val VISUAL_TREE_LAST_CHILD_INDICATOR = "+--"
-        // private const val VISUAL_TREE_FIRST_GRANDCHILD_INDICATOR = "|   "
+        // private const val VISUAL_TREE_FIRST_CHILD_GRANDCHILDREN_INDICATOR = "|   "
         // private const val VISUAL_TREE_LAST_CHILD_GRANDCHILDREN_INDICATOR = "    "
 
         data class TreeNodeTraverseNodeWrapper<T, P>(
@@ -155,20 +154,76 @@ data class TreeNode<T>(
     }
 
     /**
-     * Return the generation of a descendant node.
-     * Return null if the descendant is not found.
+     * Return the first node from the tree that corresponds to the provided predicate.
+     * Throw [IllegalArgumentException] if the provided node is not part of the tree.
      */
-    fun getDescendantGeneration(descendantNodePredicate: Predicate<TreeNode<T>>): Int? {
+    inline fun getNode(nodePredicate: (TreeNode<T>) -> Boolean): TreeNode<T> {
+        this.inDepthTraverse { currentNode ->
+            if (nodePredicate(currentNode)) {
+                return@getNode currentNode
+            }
+        }
+        throw IllegalArgumentException("Provided node is not part of the tree.")
+    }
+
+    /**
+     * Return an array with the first nodes from the tree that corresponds to the provided predicates.
+     * Return null in any element of the array that is not part of the tree.
+     */
+    fun findNodes(vararg nodePredicate: (TreeNode<T>) -> Boolean): Array<TreeNode<T>?> {
+        val foundArray = Array<TreeNode<T>?>(nodePredicate.size) { null }
+        this.run {
+            inDepthTraverse { currentNode ->
+                for (i in nodePredicate.indices) {
+                    if (nodePredicate[i](currentNode)) {
+                        foundArray[i] = currentNode
+                    }
+                }
+
+                if (foundArray.all { it != null }) {
+                    return@run
+                }
+            }
+        }
+        return foundArray
+    }
+
+    /**
+     * Return the generation of a descendant node.
+     * Throw [IllegalArgumentException] if the provided node is not part of the tree.
+     */
+    fun getDescendantGeneration(descendantNodePredicate: (TreeNode<T>) -> Boolean): Int {
         inDepthTraverse<Int>(
             rootPayload = 0,
-            payloadProvider = { _, parent ->
-                parent.payload + 1
+            payloadProvider = { _, parentWrapper ->
+                parentWrapper.payload + 1
             }
         ) { currentWrapper ->
-            if (descendantNodePredicate.test(currentWrapper.node)) {
+            if (descendantNodePredicate(currentWrapper.node)) {
                 return@getDescendantGeneration currentWrapper.payload
             }
         }
-        return null
+        throw IllegalArgumentException("Provided node is not part of the tree.")
+    }
+
+    /**
+     * Return the node's parent.
+     * Return null if the provided note is the root.
+     * Throw [IllegalArgumentException] if the provided node is not part of the tree.
+     */
+    fun getNodeParent(nodePredicate: (TreeNode<T>) -> Boolean): TreeNode<T>? {
+        if (nodePredicate(this)) return null
+
+        inDepthTraverse<TreeNode<T>>(
+            rootPayload = this,
+            payloadProvider = { _, parentWrapper ->
+                parentWrapper.node
+            }
+        ) { currentWrapper ->
+            if (nodePredicate(currentWrapper.node)) {
+                return@getNodeParent currentWrapper.payload
+            }
+        }
+        throw IllegalArgumentException("Provided node is not part of the tree.")
     }
 }

@@ -3,7 +3,7 @@ package tkd.datastructure.tree.binary
 import java.util.*
 import kotlin.collections.ArrayDeque
 
-data class BinaryNode<T>(
+class BinaryNode<T>(
     val value: T,
     val leftChild: BinaryNode<T>? = null,
     val rightChild: BinaryNode<T>? = null,

@@ -1,6 +1,8 @@
 package tkd.datastructure.tree
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 class TreeNodeTest : WordSpec() {
@@ -134,9 +136,6 @@ class TreeNodeTest : WordSpec() {
             }
             "querying child node" should {
                 "return generation 1" {
-                    tree.getDescendantGeneration("B") shouldBe 1
-                    tree.getDescendantGeneration("K") shouldBe 1
-                    tree.getDescendantGeneration("L") shouldBe 1
                     tree.getDescendantGeneration { it.value == "B" } shouldBe 1
                     tree.getDescendantGeneration { it.value == "K" } shouldBe 1
                     tree.getDescendantGeneration { it.value == "L" } shouldBe 1
@@ -164,9 +163,56 @@ class TreeNodeTest : WordSpec() {
                     tree.getDescendantGeneration { it.value == "J" } shouldBe 4
                 }
             }
-            "querying node not descendant" should {
+            "querying node not part of the tree" should {
+                "throw IllegalArgumentException" {
+                    shouldThrow<IllegalArgumentException> {
+                        tree.getDescendantGeneration { it.value == "_NONE_" }
+                    }.message shouldBe "Provided node is not part of the tree."
+                }
+            }
+        }
+
+        "getNodeParent" When {
+            "querying root node" should {
                 "return null" {
-                    tree.getDescendantGeneration { it.value == "Z" } shouldBe null
+                    tree.getNodeParent { it.value == "A" } shouldBe null
+                }
+            }
+            "querying A's children" should {
+                "return A node" {
+                    tree.getNodeParent { it.value == "B" }.shouldNotBeNull().value shouldBe "A"
+                    tree.getNodeParent { it.value == "K" }.shouldNotBeNull().value shouldBe "A"
+                    tree.getNodeParent { it.value == "L" }.shouldNotBeNull().value shouldBe "A"
+                }
+            }
+            "querying B's children" should {
+                "return B node" {
+                    tree.getNodeParent { it.value == "C" }.shouldNotBeNull().value shouldBe "B"
+                    tree.getNodeParent { it.value == "G" }.shouldNotBeNull().value shouldBe "B"
+                }
+            }
+            "querying C's children" should {
+                "return C node" {
+                    tree.getNodeParent { it.value == "D" }.shouldNotBeNull().value shouldBe "C"
+                    tree.getNodeParent { it.value == "E" }.shouldNotBeNull().value shouldBe "C"
+                    tree.getNodeParent { it.value == "F" }.shouldNotBeNull().value shouldBe "C"
+                }
+            }
+            "querying G's children" should {
+                "return G node" {
+                    tree.getNodeParent { it.value == "H" }.shouldNotBeNull().value shouldBe "G"
+                }
+            }
+            "querying H's children" should {
+                "return H node" {
+                    tree.getNodeParent { it.value == "I" }.shouldNotBeNull().value shouldBe "H"
+                    tree.getNodeParent { it.value == "J" }.shouldNotBeNull().value shouldBe "H"
+                }
+            }
+            "querying L's children" should {
+                "return L node" {
+                    tree.getNodeParent { it.value == "M" }.shouldNotBeNull().value shouldBe "L"
+                    tree.getNodeParent { it.value == "N" }.shouldNotBeNull().value shouldBe "L"
                 }
             }
         }

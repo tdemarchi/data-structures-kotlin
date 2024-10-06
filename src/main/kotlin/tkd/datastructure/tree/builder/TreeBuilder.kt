@@ -1,7 +1,8 @@
 package tkd.datastructure.tree.builder
 
-import tkd.datastructure.tree.binary.BinaryNode
 import tkd.datastructure.tree.TreeNode
+import tkd.datastructure.tree.TreeNodeDoubleLinked
+import tkd.datastructure.tree.binary.BinaryNode
 
 class TreeBuilder<T> {
     private data class NodeData<T>(
@@ -69,6 +70,17 @@ class TreeBuilder<T> {
         return this
     }
 
+    private fun getRootNodeData(): NodeData<T> =
+        nodeDataMap.values
+//            .firstOrNull { it.parent == null } // Assume the first node without parent is the root, and do not check for more roots
+//            ?: throw IllegalArgumentException("Problem building tree, there is no root node.")
+            .filter { it.parent == null }
+            .let { rootList ->
+                if (rootList.isEmpty()) throw IllegalArgumentException("Problem building tree, there is no root node.")
+                if (rootList.size > 1) throw IllegalArgumentException("Problem building tree, there are more than one root node ${rootList.map { it.value }}.")
+                rootList.first()
+            }
+
     private fun buildNode(value: T): TreeNode<T> {
         val nodeData = nodeDataMap[value]!!
         return TreeNode(
@@ -78,13 +90,23 @@ class TreeBuilder<T> {
     }
 
     fun build(): TreeNode<T> =
-        nodeDataMap.values
-            .filter { it.parent == null }
-            .let { rootList ->
-                if (rootList.isEmpty()) throw IllegalArgumentException("Problem building tree, there is no root node.")
-                if (rootList.size > 1) throw IllegalArgumentException("Problem building tree, there are more than one root node ${rootList.map { it.value }}.")
-                buildNode(rootList.first().value)
-            }
+        buildNode(getRootNodeData().value)
+
+    private fun buildNodeDoubleLinked(value: T, generationLevel: Int): TreeNodeDoubleLinked<T> {
+        val nodeData = nodeDataMap[value]!!
+        val builtChildren = nodeData.children.map { buildNodeDoubleLinked(it, generationLevel + 1) }
+
+        return TreeNodeDoubleLinked(
+            value = nodeData.value,
+            children = builtChildren,
+            generationLevel = generationLevel,
+        ).also { currentNode ->
+            builtChildren.forEach { it.setParent(currentNode) }
+        }
+    }
+
+    fun buildDoubleLinked(): TreeNodeDoubleLinked<T> =
+        buildNodeDoubleLinked(getRootNodeData().value, 0)
 
     fun buildBinary(): BinaryNode<T> =
         build().toBinary()
